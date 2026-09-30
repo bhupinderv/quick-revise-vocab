@@ -1,0 +1,5 @@
+passeren = pass
+vorming = formation
+plaat = plate
+relatief = relatively
+psychologisch = psychological

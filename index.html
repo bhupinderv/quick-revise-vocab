@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vocabulary Revisor Lite</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app">
+    <h1>Vocabulary Revisor Lite</h1>
+
+    <!-- Mode toggle -->
+    <div class="mode-row">
+      <span id="modeLabel" class="badge">Dutch → English</span>
+      <button id="reverseBtn" type="button" class="btn btn-outline">⇄ Reverse</button>
+    </div>
+
+    <!-- Card -->
+    <section id="card" class="card" hidden>
+      <h2 id="prompt" class="prompt"></h2>
+      <p id="answer" class="answer" hidden>
+        <strong id="answerLabel">English:</strong> <span id="answerText"></span>
+      </p>
+    </section>
+
+    <!-- Shown when the word list could not be loaded automatically -->
+    <section id="loader" class="card loader" hidden>
+      <p id="loaderMsg">Could not load <code>vocab.txt</code> automatically.</p>
+      <label class="btn btn-primary">
+        Load word list…
+        <input id="fileInput" type="file" accept=".txt,text/plain" hidden>
+      </label>
+      <p class="hint">One pair per line: <code>dutch = english</code></p>
+    </section>
+
+    <!-- Stats -->
+    <section class="stats">
+      <p><strong>Progress:</strong> <span id="progress">0 / 0</span></p>
+      <p>
+        <strong>Correct:</strong> <span id="correct">0</span>
+        |
+        <strong>Wrong:</strong> <span id="wrong">0</span>
+      </p>
+      <p id="accuracy" class="accuracy accuracy-low">Accuracy: 0%</p>
+    </section>
+
+    <p class="help">
+      Press <kbd>Enter</kbd> to <span id="enterAction">show meaning</span>,
+      <kbd>Space</kbd> to mark wrong
+    </p>
+  </main>
+
+  <!-- End-of-round modal -->
+  <div id="modal" class="modal-backdrop" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-header">
+        <h3 id="modalTitle"></h3>
+        <button id="modalX" type="button" class="btn-close" aria-label="Close">×</button>
+      </div>
+      <ul id="wrongList" class="list"></ul>
+      <div class="modal-footer">
+        <button id="modalClose" type="button" class="btn btn-primary">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
