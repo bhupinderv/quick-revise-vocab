@@ -1,13 +1,9 @@
 Quick revise vocabulary.
 
-#############################################################################################
-Date: 04-OCT-2026
-#############################################################################################
+####Date: 04-OCT-2026####
 Let user choose time per word (3–10 s) on the Start screen, remembered on device
 
-#############################################################################################
-Date: 03-OCT-2026
-#############################################################################################
+####Date: 03-OCT-2026####
 Add hard-words download and custom list upload; pin buttons to bottom on phones
 
 - From round 5 on, results popup offers "Download hard words" as a
@@ -17,9 +13,7 @@ Add hard-words download and custom list upload; pin buttons to bottom on phones
 - Mobile: Start / Correct / Wrong buttons pinned to the bottom of the screen
 - Results popup scrolls on small screens; cache-busting for CSS/JS
 
-#############################################################################################
-Date: 02-OCT-2026
-#############################################################################################
+####Date: 02-OCT-2026####
 Add timed reveal, undo, and multi-round mode for mobile play
 
 - Start screen: game waits for Start before showing the first word
