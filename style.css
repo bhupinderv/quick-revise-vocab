@@ -78,6 +78,7 @@ h1 { font-size: 2.5rem; font-weight: 700; margin: 0 0 1rem; }
 /* Modal */
 .modal-backdrop {
   position: fixed;
+  z-index: 20;
   inset: 0;
   background: rgba(0, 0, 0, 0.5);
   display: flex;
@@ -197,14 +198,6 @@ h1 { font-size: 2.5rem; font-weight: 700; margin: 0 0 1rem; }
   .btn-big { min-height: 80px; font-size: 1.5rem; }
   .stats { margin-top: 1rem; }
 
-  /* Thumb zone: push the action buttons to the bottom of the screen */
-  .actions {
-    order: 10;            /* after the stats */
-    margin-top: auto;     /* take up all free space above */
-    padding-top: 1rem;
-  }
-  /* Keep "Back to previous word" above Correct/Wrong so it isn't hit by accident */
-  .btn-undo { order: -1; margin: 0 0 12px; }
 }
 
 
@@ -215,3 +208,48 @@ h1 { font-size: 2.5rem; font-weight: 700; margin: 0 0 1rem; }
 .modal-footer .btn-big { min-height: 60px; font-size: 1.2rem; }
 .modal-footer-row { display: flex; gap: 0.5rem; }
 .modal-footer-row .btn { flex: 1; }
+
+/* ---- Phones / touch screens: buttons pinned to the bottom (thumb zone) ---- */
+@media (max-width: 600px), (pointer: coarse) {
+  .app { padding-bottom: 200px; } /* room so content never hides behind the bar */
+  .actions {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10;
+    max-width: 552px;
+    margin: 0 auto;
+    min-height: 0;
+    padding: 12px 16px calc(16px + env(safe-area-inset-bottom));
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.08);
+    border-radius: 18px 18px 0 0;
+  }
+  /* Keep "Back to previous word" above Correct/Wrong so it isn't hit by accident */
+  .btn-undo { order: -1; margin: 0 0 12px; }
+}
+
+/* Keep button labels on one line, even on small phones */
+.btn-big, .btn-undo { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 380px) {
+  .btn-big { font-size: 1.25rem; }
+  .btn-undo { font-size: 0.95rem; }
+}
+
+/* ---- Word list source on the Start screen ---- */
+.list-box { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #dee2e6; }
+.list-source { margin: 0 0 0.75rem; color: #495057; word-break: break-word; }
+.list-buttons { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; }
+.list-buttons .btn { min-height: 44px; padding: 0.5rem 1rem; font-size: 1rem; display: inline-flex; align-items: center; }
+.list-msg { margin: 0.75rem 0 0; color: #198754; font-weight: 600; }
+.list-msg-error { color: #dc3545; }
+.list-box .hint { margin: 0.75rem 0 0; color: #6c757d; font-size: 0.85rem; }
+
+/* ---- Hard words download in the results popup ---- */
+.hard-box { background: #fff8e1; border: 1px solid #ffe08a; border-radius: 12px; padding: 0.75rem; }
+.hard-text { margin: 0 0 0.6rem; font-size: 0.95rem; color: #664d03; }
+.btn-download { background: #fd7e14; min-height: 56px !important; font-size: 1.1rem !important; }
+
+/* Results popup never taller than the screen; scrolls instead */
+.modal { max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); overflow-y: auto; }

@@ -8,9 +8,16 @@
 // Rounds: Round 1 = every word in vocab.txt. Each next round = only the words marked
 // wrong in the round before. Rounds continue until every word has been answered correctly.
 //
+// Hard words: from round HARD_ROUND on, the results popup offers a download of the words
+// still wrong, in the same "dutch = english" format, so they can be uploaded as a new list.
+// Own list: on the Start screen a .txt list can be uploaded; it's remembered on this device
+// until "Use default list" is tapped.
+//
 //   'Back to previous word' re-opens ONLY the word just marked, so a mis-tap can be fixed.
 
 const THINK_SECONDS = 5;
+const HARD_ROUND = 5;                    // offer the "hard words" download after this round
+const STORAGE_KEY = 'vrl.customList';    // remembered uploaded list: { name, text }
 
 // ---- State ----
 let allWords = [];       // full list from vocab.txt
@@ -25,6 +32,8 @@ let reverseMode = false; // false: Dutch → English, true: English → Dutch
 let modalOpen = false;
 let timerId = null;
 let deadline = 0;
+let listName = 'vocab.txt';
+let lastMissed = [];      // words still wrong at the end of the latest round
 
 // ---- Elements ----
 const $ = (id) => document.getElementById(id);
@@ -40,6 +49,9 @@ const el = {
   progress: $('progress'), correct: $('correct'), wrong: $('wrong'), accuracy: $('accuracy'),
   modal: $('modal'), modalTitle: $('modalTitle'), wrongList: $('wrongList'),
   modalX: $('modalX'), modalClose: $('modalClose'), modalNext: $('modalNext'),
+  listBox: $('listBox'), listName: $('listName'), listCount: $('listCount'), listMsg: $('listMsg'),
+  uploadInput: $('uploadInput'), defaultListBtn: $('defaultListBtn'),
+  hardBox: $('hardBox'), downloadBtn: $('downloadBtn'),
   modalSummary: $('modalSummary'), wrongHeading: $('wrongHeading'), roundNo: $('roundNo'),
 };
 
@@ -57,12 +69,17 @@ function parseVocab(text) {
     .filter((item) => item && item.word && item.meaning);
 }
 
-function setWords(list) {
+function countEntryLines(text) {
+  return text.split(/\r?\n/).map((l) => l.trim()).filter((l) => l && !l.startsWith('#')).length;
+}
+
+function setWords(list, name) {
   if (list.length === 0) {
     showLoader('No valid <code>dutch = english</code> lines found in that file.');
     return;
   }
   allWords = list;
+  listName = name;
   el.loader.hidden = true;
   el.card.hidden = false;
   el.actions.hidden = false;
@@ -77,23 +94,116 @@ function showLoader(message) {
   render();
 }
 
-async function loadVocab() {
+function showListMsg(text, isError) {
+  el.listMsg.textContent = text;
+  el.listMsg.className = 'list-msg' + (isError ? ' list-msg-error' : '');
+  el.listMsg.hidden = !text;
+}
+
+// Remembered uploaded list (localStorage can be unavailable, e.g. private mode)
+function getSavedList() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)); } catch { return null; }
+}
+function saveList(name, text) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ name, text })); } catch { /* not remembered */ }
+}
+function forgetList() {
+  try { localStorage.removeItem(STORAGE_KEY); } catch { /* ignore */ }
+}
+
+async function loadDefaultVocab() {
   try {
     const res = await fetch('vocab.txt', { cache: 'no-store' });
     if (!res.ok) throw new Error(res.status);
-    setWords(parseVocab(await res.text()));
+    setWords(parseVocab(await res.text()), 'vocab.txt');
   } catch {
     // Happens when index.html is opened straight from disk (file://)
     showLoader('Could not load <code>vocab.txt</code> automatically.');
   }
 }
 
+async function loadVocab() {
+  const saved = getSavedList();
+  if (saved && saved.text) {
+    const list = parseVocab(saved.text);
+    if (list.length) {
+      setWords(list, saved.name || 'my list');
+      return;
+    }
+  }
+  await loadDefaultVocab();
+}
+
+// Upload from the Start screen: replaces the current list and starts again at Round 1
+async function handleUpload(file) {
+  if (!file) return;
+  let text;
+  try { text = await file.text(); } catch {
+    showListMsg('Could not read that file.', true);
+    return;
+  }
+  const list = parseVocab(text);
+  if (list.length === 0) {
+    showListMsg(`No "dutch = english" lines found in ${file.name}. Your current list is unchanged.`, true);
+    return;
+  }
+  saveList(file.name, text);
+  setWords(list, file.name);
+  const skipped = countEntryLines(text) - list.length;
+  showListMsg(
+    `✓ Loaded ${list.length} word${list.length > 1 ? 's' : ''} from ${file.name}` +
+    (skipped ? ` (${skipped} line${skipped > 1 ? 's' : ''} skipped, no "=")` : ''),
+    false
+  );
+}
+
+el.uploadInput.addEventListener('change', async () => {
+  await handleUpload(el.uploadInput.files[0]);
+  el.uploadInput.value = '';
+});
+
+// Fallback picker shown only when vocab.txt can't be loaded
 el.fileInput.addEventListener('change', async () => {
   const file = el.fileInput.files[0];
   if (!file) return;
-  setWords(parseVocab(await file.text()));
+  const list = parseVocab(await file.text());
+  if (list.length) saveList(file.name, await file.text());
+  setWords(list, file.name);
   el.fileInput.value = '';
 });
+
+el.defaultListBtn.addEventListener('click', async () => {
+  forgetList();
+  el.defaultListBtn.blur();
+  await loadDefaultVocab();
+  showListMsg('✓ Back to the default list', false);
+});
+
+// ---- Hard words download ----
+function todayStamp() {
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+function downloadHardWords() {
+  if (!lastMissed.length) return;
+  // Always "dutch = english" (same as vocab.txt) so the file can be uploaded again
+  const lines = [
+    `# Hard words after round ${round}, ${todayStamp()} (from ${listName})`,
+    ...lastMissed.map((w) => `${w.word} = ${w.meaning}`),
+  ];
+  const blob = new Blob([lines.join('\n') + '\n'], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `hard-words-${todayStamp()}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  el.downloadBtn.textContent = `✓ Downloaded (${lastMissed.length} words)`;
+}
 
 // ---- Round logic ----
 function shuffle(array) {
@@ -129,6 +239,7 @@ function advanceRound() {
 function startGame() {
   if (phase !== 'idle' || words.length === 0) return;
   el.startBtn.blur();
+  showListMsg('', false);
   startThinking();
 }
 
@@ -201,6 +312,7 @@ function finishRound() {
   stopTimer();
   phase = 'finished';
   const missed = words.filter((w) => w.status === 'wrong');
+  lastMissed = missed;
   const pct = accuracy();
 
   el.wrongList.innerHTML = '';
@@ -220,6 +332,10 @@ function finishRound() {
   el.modalNext.textContent = missed.length
     ? `▶ Start Round ${round + 1} (${missed.length} word${missed.length > 1 ? 's' : ''})`
     : '↻ Play again (all words)';
+
+  // From round HARD_ROUND on, offer the still-wrong words as a download
+  el.hardBox.hidden = !(round >= HARD_ROUND && missed.length > 0);
+  el.downloadBtn.textContent = `⬇ Download hard words (${missed.length})`;
 
   modalOpen = true;
   el.modal.hidden = false;
@@ -268,6 +384,10 @@ function render() {
   }
 
   el.idleHint.hidden = phase !== 'idle';
+  el.listBox.hidden = phase !== 'idle';
+  el.listName.textContent = listName;
+  el.listCount.textContent = allWords.length;
+  el.defaultListBtn.hidden = listName === 'vocab.txt' && !getSavedList();
   el.timer.hidden = phase !== 'thinking';
   el.answer.hidden = phase !== 'revealed' && phase !== 'finished';
 
@@ -305,6 +425,7 @@ el.modalClose.addEventListener('click', closeModal);
 el.undoBtn.addEventListener('click', undoLast);
 el.modalUndo.addEventListener('click', undoLast);
 el.modalNext.addEventListener('click', nextRoundNow);
+el.downloadBtn.addEventListener('click', downloadHardWords);
 el.modal.addEventListener('click', (e) => { if (e.target === el.modal) closeModal(); });
 
 document.addEventListener('keydown', (e) => {

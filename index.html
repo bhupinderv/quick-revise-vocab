@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0d6efd">
   <title>Vocabulary Revisor Lite</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
   <main class="app">
@@ -21,6 +21,20 @@
     <section id="card" class="card" hidden>
       <h2 id="prompt" class="prompt"></h2>
       <p id="idleHint" class="idle-hint">Tap <strong>Start</strong> to see the first word</p>
+
+      <!-- Word list source (only on the Start screen) -->
+      <div id="listBox" class="list-box" hidden>
+        <p class="list-source">List: <strong id="listName">vocab.txt</strong> (<span id="listCount">0</span> words)</p>
+        <div class="list-buttons">
+          <label class="btn btn-outline btn-file">
+            📂 Upload my own list
+            <input id="uploadInput" type="file" accept=".txt,text/plain" hidden>
+          </label>
+          <button id="defaultListBtn" type="button" class="btn btn-outline" hidden>↺ Use default list</button>
+        </div>
+        <p id="listMsg" class="list-msg" hidden></p>
+        <p class="hint">.txt file, one pair per line: <code>dutch = english</code></p>
+      </div>
 
       <!-- 5-second thinking timer -->
       <div id="timer" class="timer" hidden aria-live="polite">
@@ -44,7 +58,7 @@
       </div>
       <!-- Go back one word to fix a mis-tap (only the previous word) -->
       <button id="undoBtn" type="button" class="btn-undo" hidden>
-        ↩ Back to previous word: <span id="undoWord"></span> <span id="undoMark"></span>
+        ↩ Previous word: <span id="undoWord"></span> <span id="undoMark"></span>
       </button>
     </section>
 
@@ -84,6 +98,10 @@
       <ul id="wrongList" class="list"></ul>
       <div class="modal-footer">
         <button id="modalNext" type="button" class="btn-big btn-start">▶ Start Round 2</button>
+        <div id="hardBox" class="hard-box" hidden>
+          <p class="hard-text">These words keep slipping. Save them and practise them on their own with <strong>Upload my own list</strong>.</p>
+          <button id="downloadBtn" type="button" class="btn-big btn-download">⬇ Download hard words</button>
+        </div>
         <div class="modal-footer-row">
           <button id="modalUndo" type="button" class="btn btn-outline">↩ Fix last answer</button>
           <button id="modalClose" type="button" class="btn btn-outline">Close</button>
@@ -92,6 +110,6 @@
     </div>
   </div>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=4"></script>
 </body>
 </html>
