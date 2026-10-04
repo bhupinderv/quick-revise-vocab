@@ -1,7 +1,7 @@
 // Vocabulary Revisor Lite: plain JavaScript version
 //
 // Flow per word:
-//   idle  --Start-->  thinking (word shown, 3–10 s countdown, user's choice)
+//   idle  --Start-->  thinking (word shown, 2–6 s countdown, user's choice)
 //         --timer-->  revealed (answer shown, Correct / Wrong buttons)
 //         --Correct/Wrong-->  thinking for the next word … until the round ends → finished → idle
 //
@@ -15,11 +15,11 @@
 //
 //   'Back to previous word' re-opens ONLY the word just marked, so a mis-tap can be fixed.
 
-const MIN_SECONDS = 3;                   // thinking time limits chosen by the user
-const MAX_SECONDS = 10;
+const MIN_SECONDS = 2;                   // thinking time limits chosen by the user
+const MAX_SECONDS = 6;
 const DEFAULT_SECONDS = 5;
 const TIME_KEY = 'vrl.thinkSeconds';     // remembered thinking time on this device
-const HARD_ROUND = 5;                    // offer the "hard words" download after this round
+const HARD_ROUND = 3;                    // offer the "hard words" download after this round
 const STORAGE_KEY = 'vrl.customList';    // remembered uploaded list: { name, text }
 
 // ---- State ----
@@ -53,7 +53,7 @@ const el = {
   progress: $('progress'), correct: $('correct'), wrong: $('wrong'), accuracy: $('accuracy'),
   modal: $('modal'), modalTitle: $('modalTitle'), wrongList: $('wrongList'),
   modalX: $('modalX'), modalClose: $('modalClose'), modalNext: $('modalNext'),
-  timeBox: $('timeBox'), timeMinus: $('timeMinus'), timePlus: $('timePlus'), timeValue: $('timeValue'),
+  timeBox: $('timeBox'), timeMinus: $('timeMinus'), timePlus: $('timePlus'), timeValue: $('timeValue'), timeRange: $('timeRange'),
   listBox: $('listBox'), listName: $('listName'), listCount: $('listCount'), listMsg: $('listMsg'),
   uploadInput: $('uploadInput'), defaultListBtn: $('defaultListBtn'),
   hardBox: $('hardBox'), downloadBtn: $('downloadBtn'),
@@ -184,7 +184,7 @@ el.defaultListBtn.addEventListener('click', async () => {
   showListMsg('✓ Back to the default list', false);
 });
 
-// ---- Thinking time (3–10 s, chosen on the Start screen) ----
+// ---- Thinking time (2–6 s, chosen on the Start screen) ----
 function clampSeconds(n) {
   n = Math.round(Number(n));
   if (!Number.isFinite(n)) return DEFAULT_SECONDS;
@@ -415,6 +415,7 @@ function render() {
   el.idleHint.hidden = phase !== 'idle';
   el.timeBox.hidden = phase !== 'idle';
   el.timeValue.textContent = `${thinkSeconds} s`;
+  el.timeRange.textContent = `${MIN_SECONDS}–${MAX_SECONDS} seconds`;
   el.timeMinus.disabled = thinkSeconds <= MIN_SECONDS;
   el.timePlus.disabled = thinkSeconds >= MAX_SECONDS;
   el.listBox.hidden = phase !== 'idle';

@@ -2,9 +2,13 @@ Quick revise vocabulary.
 
 # Date: 04-OCT-2026
 
-## Let user choose time per word (3–10 s) on the Start screen, remembered on device
+## Change time per word to 2–6 s; offer hard-words download from round 3
 
 # Date: 03-OCT-2026
+
+## Let user choose time per word (3–10 s) on the Start screen, remembered on device
+
+# Date: 02-OCT-2026
 
 ## Add hard-words download and custom list upload; pin buttons to bottom on phones
 
@@ -15,7 +19,7 @@ Quick revise vocabulary.
 - Mobile: Start / Correct / Wrong buttons pinned to the bottom of the screen
 - Results popup scrolls on small screens; cache-busting for CSS/JS
 
-# Date: 02-OCT-2026
+# Date: 01-OCT-2026
 
 ## Add timed reveal, undo, and multi-round mode for mobile play
 
