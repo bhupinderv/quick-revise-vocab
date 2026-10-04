@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0d6efd">
   <title>Vocabulary Revisor Lite</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -19,9 +20,32 @@
     <!-- Card -->
     <section id="card" class="card" hidden>
       <h2 id="prompt" class="prompt"></h2>
+      <p id="idleHint" class="idle-hint">Tap <strong>Start</strong> to see the first word</p>
+
+      <!-- 5-second thinking timer -->
+      <div id="timer" class="timer" hidden aria-live="polite">
+        <div class="timer-count"><span id="timerSeconds">5</span>s</div>
+        <div class="timer-track"><div id="timerBar" class="timer-bar"></div></div>
+        <p class="timer-hint">Think of the meaning…</p>
+      </div>
+
       <p id="answer" class="answer" hidden>
         <strong id="answerLabel">English:</strong> <span id="answerText"></span>
       </p>
+    </section>
+
+    <!-- Action buttons (big, thumb-friendly) -->
+    <section id="actions" class="actions" hidden>
+      <button id="startBtn" type="button" class="btn-big btn-start">▶ Start</button>
+      <p id="waitMsg" class="wait-msg" hidden>Answer appears when the timer ends</p>
+      <div id="judgeRow" class="judge-row" hidden>
+        <button id="wrongBtn" type="button" class="btn-big btn-wrong">✗ Wrong</button>
+        <button id="correctBtn" type="button" class="btn-big btn-correct">✓ Correct</button>
+      </div>
+      <!-- Go back one word to fix a mis-tap (only the previous word) -->
+      <button id="undoBtn" type="button" class="btn-undo" hidden>
+        ↩ Back to previous word: <span id="undoWord"></span> <span id="undoMark"></span>
+      </button>
     </section>
 
     <!-- Shown when the word list could not be loaded automatically -->
@@ -36,6 +60,7 @@
 
     <!-- Stats -->
     <section class="stats">
+      <p><strong>Round:</strong> <span id="roundNo">1</span></p>
       <p><strong>Progress:</strong> <span id="progress">0 / 0</span></p>
       <p>
         <strong>Correct:</strong> <span id="correct">0</span>
@@ -45,10 +70,6 @@
       <p id="accuracy" class="accuracy accuracy-low">Accuracy: 0%</p>
     </section>
 
-    <p class="help">
-      Press <kbd>Enter</kbd> to <span id="enterAction">show meaning</span>,
-      <kbd>Space</kbd> to mark wrong
-    </p>
   </main>
 
   <!-- End-of-round modal -->
@@ -58,9 +79,15 @@
         <h3 id="modalTitle"></h3>
         <button id="modalX" type="button" class="btn-close" aria-label="Close">×</button>
       </div>
+      <p id="modalSummary" class="modal-summary"></p>
+      <p id="wrongHeading" class="wrong-heading">Words you got wrong ❌ — these come back next round</p>
       <ul id="wrongList" class="list"></ul>
       <div class="modal-footer">
-        <button id="modalClose" type="button" class="btn btn-primary">Close</button>
+        <button id="modalNext" type="button" class="btn-big btn-start">▶ Start Round 2</button>
+        <div class="modal-footer-row">
+          <button id="modalUndo" type="button" class="btn btn-outline">↩ Fix last answer</button>
+          <button id="modalClose" type="button" class="btn btn-outline">Close</button>
+        </div>
       </div>
     </div>
   </div>

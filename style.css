@@ -11,6 +11,7 @@ body {
 
 .app {
   min-height: 100vh;
+  min-height: 100dvh;
   max-width: 960px;
   margin: 0 auto;
   padding: 16px;
@@ -43,6 +44,7 @@ h1 { font-size: 2.5rem; font-weight: 700; margin: 0 0 1rem; }
   cursor: pointer;
   border: 1px solid #0d6efd;
   display: inline-block;
+  touch-action: manipulation;
 }
 .btn-outline { background: transparent; color: #0d6efd; }
 .btn-outline:hover { background: #0d6efd; color: #fff; }
@@ -72,15 +74,6 @@ h1 { font-size: 2.5rem; font-weight: 700; margin: 0 0 1rem; }
 .accuracy-mid { color: #ffc107; }
 .accuracy-high { color: #198754; }
 
-.help { color: #6c757d; margin-top: 1.5rem; }
-
-kbd {
-  background-color: hsl(26, 86%, 46%);
-  color: #fff;
-  border-radius: 4px;
-  padding: 3px 6px;
-  font-size: 0.9rem;
-}
 
 /* Modal */
 .modal-backdrop {
@@ -121,4 +114,95 @@ kbd {
 .list:empty { display: none; }
 .list li { padding: 0.6rem 1rem; font-size: 1.1rem; border-bottom: 1px solid #dee2e6; }
 .list li:last-child { border-bottom: none; }
-.modal-footer { display: flex; justify-content: flex-end; padding-top: 0.75rem; border-top: 1px solid #dee2e6; }
+.modal-footer { display: flex; flex-direction: column; gap: 0.6rem; padding-top: 0.75rem; border-top: 1px solid #dee2e6; }
+
+/* ---- Game flow: idle hint, timer, answer ---- */
+.idle-hint { color: #6c757d; font-size: 1.1rem; margin: 0; }
+
+.timer { margin-top: 0.5rem; }
+.timer-count { font-size: 2.25rem; font-weight: 700; color: #0d6efd; font-variant-numeric: tabular-nums; }
+.timer-track {
+  height: 10px;
+  margin: 0.5rem 0;
+  background: #e9ecef;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.timer-bar { height: 100%; width: 100%; background: #0d6efd; border-radius: 999px; transition: width 0.1s linear; }
+.timer-hint { margin: 0.5rem 0 0; color: #6c757d; }
+
+/* ---- Big, thumb-friendly action buttons ---- */
+.actions {
+  width: 100%;
+  max-width: 520px;
+  margin-top: 1.25rem;
+  min-height: 72px; /* keeps layout steady while switching between states */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.btn-big {
+  font: inherit;
+  font-size: 1.4rem;
+  font-weight: 700;
+  width: 100%;
+  min-height: 72px;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 16px;
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+  touch-action: manipulation;          /* no double-tap zoom delay */
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  transition: transform 0.08s ease, filter 0.15s ease;
+}
+.btn-big:active { transform: scale(0.97); filter: brightness(0.9); }
+.btn-big:focus-visible { outline: 4px solid #ffc107; outline-offset: 3px; }
+.btn-start   { background: #0d6efd; }
+.btn-correct { background: #198754; }
+.btn-wrong   { background: #dc3545; }
+.judge-row { display: flex; gap: 12px; }
+.judge-row .btn-big { flex: 1; }
+.btn-undo {
+  font: inherit;
+  font-size: 1.05rem;
+  font-weight: 600;
+  width: 100%;
+  min-height: 52px;
+  margin-top: 12px;
+  padding: 0.5rem 1rem;
+  border: 2px solid #6c757d;
+  border-radius: 14px;
+  background: #fff;
+  color: #495057;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-undo:active { background: #e9ecef; }
+.modal-footer .btn { min-height: 44px; padding: 0.5rem 1rem; font-size: 1rem; }
+.wait-msg { margin: 0; color: #6c757d; font-style: italic; }
+
+/* ---- Phone layout ---- */
+@media (max-width: 600px) {
+  .app { justify-content: flex-start; padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); }
+  h1 { font-size: 1.5rem; margin-bottom: 0.75rem; }
+  .mode-row { margin-bottom: 1rem; }
+  .btn-outline { padding: 0.5rem 0.9rem; font-size: 1rem; }
+  .card { padding: 1.25rem; }
+  .prompt { font-size: 2.25rem; }
+  .answer { font-size: 1.35rem; }
+  .btn-big { min-height: 80px; font-size: 1.5rem; }
+  .stats { margin-top: 1rem; }
+}
+
+
+/* ---- Round summary popup ---- */
+.modal-summary { margin: 1rem 0 0.5rem; font-size: 1.1rem; line-height: 1.6; }
+.all-done { color: #198754; font-weight: 700; }
+.wrong-heading { margin: 0.75rem 0 0; font-weight: 600; color: #dc3545; }
+.modal-footer .btn-big { min-height: 60px; font-size: 1.2rem; }
+.modal-footer-row { display: flex; gap: 0.5rem; }
+.modal-footer-row .btn { flex: 1; }
