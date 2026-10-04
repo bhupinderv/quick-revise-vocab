@@ -196,6 +196,15 @@ h1 { font-size: 2.5rem; font-weight: 700; margin: 0 0 1rem; }
   .answer { font-size: 1.35rem; }
   .btn-big { min-height: 80px; font-size: 1.5rem; }
   .stats { margin-top: 1rem; }
+
+  /* Thumb zone: push the action buttons to the bottom of the screen */
+  .actions {
+    order: 10;            /* after the stats */
+    margin-top: auto;     /* take up all free space above */
+    padding-top: 1rem;
+  }
+  /* Keep "Back to previous word" above Correct/Wrong so it isn't hit by accident */
+  .btn-undo { order: -1; margin: 0 0 12px; }
 }
 
 
