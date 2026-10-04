@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0d6efd">
   <title>Vocabulary Revisor Lite</title>
-  <link rel="stylesheet" href="style.css?v=4">
+  <link rel="stylesheet" href="style.css?v=5">
 </head>
 <body>
   <main class="app">
@@ -21,6 +21,17 @@
     <section id="card" class="card" hidden>
       <h2 id="prompt" class="prompt"></h2>
       <p id="idleHint" class="idle-hint">Tap <strong>Start</strong> to see the first word</p>
+
+      <!-- Thinking time setting (only on the Start screen) -->
+      <div id="timeBox" class="time-box" hidden>
+        <span class="time-label">⏱ Time per word</span>
+        <div class="stepper">
+          <button id="timeMinus" type="button" class="step-btn" aria-label="Less time">−</button>
+          <output id="timeValue" class="time-value" aria-live="polite">5 s</output>
+          <button id="timePlus" type="button" class="step-btn" aria-label="More time">+</button>
+        </div>
+        <span class="time-range">3–10 seconds</span>
+      </div>
 
       <!-- Word list source (only on the Start screen) -->
       <div id="listBox" class="list-box" hidden>
@@ -110,6 +121,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=4"></script>
+  <script src="app.js?v=5"></script>
 </body>
 </html>

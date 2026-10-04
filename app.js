@@ -1,7 +1,7 @@
 // Vocabulary Revisor Lite: plain JavaScript version
 //
 // Flow per word:
-//   idle  --Start-->  thinking (word shown, 5 s countdown)
+//   idle  --Start-->  thinking (word shown, 3–10 s countdown, user's choice)
 //         --timer-->  revealed (answer shown, Correct / Wrong buttons)
 //         --Correct/Wrong-->  thinking for the next word … until the round ends → finished → idle
 //
@@ -15,7 +15,10 @@
 //
 //   'Back to previous word' re-opens ONLY the word just marked, so a mis-tap can be fixed.
 
-const THINK_SECONDS = 5;
+const MIN_SECONDS = 3;                   // thinking time limits chosen by the user
+const MAX_SECONDS = 10;
+const DEFAULT_SECONDS = 5;
+const TIME_KEY = 'vrl.thinkSeconds';     // remembered thinking time on this device
 const HARD_ROUND = 5;                    // offer the "hard words" download after this round
 const STORAGE_KEY = 'vrl.customList';    // remembered uploaded list: { name, text }
 
@@ -32,6 +35,7 @@ let reverseMode = false; // false: Dutch → English, true: English → Dutch
 let modalOpen = false;
 let timerId = null;
 let deadline = 0;
+let thinkSeconds = loadThinkSeconds();
 let listName = 'vocab.txt';
 let lastMissed = [];      // words still wrong at the end of the latest round
 
@@ -49,6 +53,7 @@ const el = {
   progress: $('progress'), correct: $('correct'), wrong: $('wrong'), accuracy: $('accuracy'),
   modal: $('modal'), modalTitle: $('modalTitle'), wrongList: $('wrongList'),
   modalX: $('modalX'), modalClose: $('modalClose'), modalNext: $('modalNext'),
+  timeBox: $('timeBox'), timeMinus: $('timeMinus'), timePlus: $('timePlus'), timeValue: $('timeValue'),
   listBox: $('listBox'), listName: $('listName'), listCount: $('listCount'), listMsg: $('listMsg'),
   uploadInput: $('uploadInput'), defaultListBtn: $('defaultListBtn'),
   hardBox: $('hardBox'), downloadBtn: $('downloadBtn'),
@@ -179,6 +184,30 @@ el.defaultListBtn.addEventListener('click', async () => {
   showListMsg('✓ Back to the default list', false);
 });
 
+// ---- Thinking time (3–10 s, chosen on the Start screen) ----
+function clampSeconds(n) {
+  n = Math.round(Number(n));
+  if (!Number.isFinite(n)) return DEFAULT_SECONDS;
+  return Math.min(MAX_SECONDS, Math.max(MIN_SECONDS, n));
+}
+
+function loadThinkSeconds() {
+  try {
+    const saved = localStorage.getItem(TIME_KEY);
+    return saved === null ? DEFAULT_SECONDS : clampSeconds(saved);
+  } catch { return DEFAULT_SECONDS; }
+}
+
+function changeThinkSeconds(delta) {
+  if (phase !== 'idle') return; // only changeable on the Start screen
+  thinkSeconds = clampSeconds(thinkSeconds + delta);
+  try { localStorage.setItem(TIME_KEY, String(thinkSeconds)); } catch { /* not remembered */ }
+  render();
+}
+
+el.timeMinus.addEventListener('click', () => changeThinkSeconds(-1));
+el.timePlus.addEventListener('click', () => changeThinkSeconds(+1));
+
 // ---- Hard words download ----
 function todayStamp() {
   const d = new Date();
@@ -247,7 +276,7 @@ function startGame() {
 function startThinking() {
   stopTimer();
   phase = 'thinking';
-  deadline = Date.now() + THINK_SECONDS * 1000;
+  deadline = Date.now() + thinkSeconds * 1000;
   render();
   tick();
   timerId = setInterval(tick, 100);
@@ -256,7 +285,7 @@ function startThinking() {
 function tick() {
   const msLeft = Math.max(0, deadline - Date.now());
   el.timerSeconds.textContent = Math.ceil(msLeft / 1000);
-  el.timerBar.style.width = (msLeft / (THINK_SECONDS * 1000)) * 100 + '%';
+  el.timerBar.style.width = (msLeft / (thinkSeconds * 1000)) * 100 + '%';
   if (msLeft <= 0) reveal();
 }
 
@@ -384,6 +413,10 @@ function render() {
   }
 
   el.idleHint.hidden = phase !== 'idle';
+  el.timeBox.hidden = phase !== 'idle';
+  el.timeValue.textContent = `${thinkSeconds} s`;
+  el.timeMinus.disabled = thinkSeconds <= MIN_SECONDS;
+  el.timePlus.disabled = thinkSeconds >= MAX_SECONDS;
   el.listBox.hidden = phase !== 'idle';
   el.listName.textContent = listName;
   el.listCount.textContent = allWords.length;
